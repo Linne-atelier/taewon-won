@@ -63,18 +63,393 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:22px}
 <footer>源 · WON / FICTIONAL RESTAURANT PAGE</footer>
 </main>
 <script>
-const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate(),key=y*10000+m*100+d;
-document.getElementById('today').textContent=`${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
-const rnd=s=>{let x=Math.sin(s)*10000;return x-Math.floor(x)},pick=(a,s)=>a[Math.floor(rnd(key+s)*a.length)%a.length];
-const season=[3,4,5].includes(m)?'spring':[6,7,8].includes(m)?'summer':[9,10,11].includes(m)?'autumn':'winter';
-const P={
-spring:{a:['참돔','도다리','죽순','전복','새조개','금태'],s:['도미 · 유채','전복 · 게우','새조개 · 미나리'],w:['도미 · 죽순','바지락 · 유자','조개 · 미나리'],z:['참돔 · 다시마','도다리 · 세발나물','참치 · 잎채소'],g:['금태 · 숯','옥돔 · 소금','은대구 · 된장'],su:['참돔 · 참치 · 전갱이 · 단새우 · 관자','도다리 · 참치 · 성게 · 전갱이 · 새우'],r:['도미 솥밥','죽순 솥밥','전복 솥밥'],de:['딸기 · 말차','한라봉','쑥 아이스크림']},
-summer:{a:['농어','전복','성게','갯장어','한치','참치'],s:['전복 · 오이','성게 · 두부','한치 · 초생강'],w:['갯장어 · 매실','바지락 · 유자','농어 · 맑은 육수'],z:['농어 · 시소','한치 · 소금','참치 · 다시마'],g:['은대구 · 숯','농어 · 소금','장어 · 간장'],su:['참치 · 성게 · 한치 · 단새우 · 관자','농어 · 전갱이 · 참치 · 성게 · 새우'],r:['장어 솥밥','전복 솥밥','옥수수 · 버터밥'],de:['수박 · 소금','복숭아','말차 · 우유']},
-autumn:{a:['전어','고등어','금태','송이버섯','참돔','단새우'],s:['전어 · 식초','단새우 · 성게','송이버섯 · 맑은 육수'],w:['도미 · 유자','바지락 · 표고','대합 · 미츠바'],z:['참돔 · 다시마','고등어 · 생강','참치 · 시소'],g:['금태 · 숯','고등어 · 소금','은대구 · 된장'],su:['참치 · 전어 · 고등어 · 단새우 · 성게','참돔 · 참치 · 전갱이 · 관자 · 성게'],r:['송이버섯 솥밥','도미 솥밥','밤 · 표고 솥밥'],de:['배 · 말차','감 · 우유','무화과']},
-winter:{a:['방어','대구','굴','참치','금태','복어'],s:['굴 · 무','방어 · 파','전복 · 게우'],w:['대구 · 유자','복어 · 미나리','조개 · 무'],z:['방어 · 와사비','참치 · 다시마','광어 · 소금'],g:['금태 · 숯','대구 · 된장','방어 · 간장'],su:['방어 · 참치 · 광어 · 성게 · 관자','참치 · 방어 · 단새우 · 전갱이 · 성게'],r:['굴 솥밥','대구 솥밥','전복 솥밥'],de:['귤 · 말차','딸기','배 · 생강']}
-}[season];
-document.getElementById('arrival').innerHTML=[pick(P.a,11),pick(P.a,23),pick(P.a,41)].filter((v,i,a)=>a.indexOf(v)===i).map(x=>`<span class="tag">오늘의 입고 · ${x}</span>`).join('');
-const items=[['先付',pick(P.s,101)],['椀',pick(P.w,202)],['造り',pick(P.z,303)],['焼物',pick(P.g,404)],['鮨',pick(P.su,505)],['食事',pick(P.r,606)],['甘味',pick(P.de,707)]];
-document.getElementById('courseList').innerHTML=items.map(x=>`<div class="row"><div class="label">${x[0]}</div><div class="menu">${x[1]}</div></div>`).join('');
+const now = new Date();
+const y = now.getFullYear();
+const m = now.getMonth() + 1;
+const d = now.getDate();
+const key = y * 10000 + m * 100 + d;
+
+document.getElementById('today').textContent =
+  `${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
+
+const rnd = seed => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+const pickIndex = (length, salt) =>
+  Math.floor(rnd(key + salt) * length) % length;
+
+const season =
+  [3,4,5].includes(m) ? 'spring' :
+  [6,7,8].includes(m) ? 'summer' :
+  [9,10,11].includes(m) ? 'autumn' :
+  'winter';
+
+
+/* =========================
+   계절별 오늘의 코스
+========================= */
+
+const pools = {
+
+  spring: {
+    arrival: [
+      '참돔','도다리','금태','전복',
+      '새조개','갑오징어','학꽁치','단새우',
+      '죽순','두릅','봄미나리','완두'
+    ],
+
+    starter: [
+      {name:'새조개 · 봄미나리', main:'새조개'},
+      {name:'전복 · 게우', main:'전복'},
+      {name:'도미 · 유채', main:'도미'},
+      {name:'갑오징어 · 두릅', main:'갑오징어'},
+      {name:'학꽁치 · 초생강', main:'학꽁치'}
+    ],
+
+    soup: [
+      {name:'도미 · 죽순', main:'도미'},
+      {name:'바지락 · 유자', main:'바지락'},
+      {name:'새조개 · 미나리', main:'새조개'},
+      {name:'전복 · 맑은 육수', main:'전복'},
+      {name:'완두 · 다시', main:'완두'}
+    ],
+
+    sashimi: [
+      {name:'참돔 · 다시마', main:'참돔'},
+      {name:'도다리 · 세발나물', main:'도다리'},
+      {name:'학꽁치 · 시소', main:'학꽁치'},
+      {name:'참치 · 생와사비', main:'참치'},
+      {name:'갑오징어 · 소금', main:'갑오징어'}
+    ],
+
+    grilled: [
+      {name:'금태 · 숯', main:'금태'},
+      {name:'옥돔 · 소금', main:'옥돔'},
+      {name:'은대구 · 된장', main:'은대구'},
+      {name:'전복 · 간장버터', main:'전복'},
+      {name:'도미 가마 · 소금', main:'도미'}
+    ],
+
+    sushi: [
+      {name:'참돔 · 참치 · 전갱이 · 단새우 · 관자', main:'참돔'},
+      {name:'도다리 · 참치 · 성게 · 전갱이 · 새우', main:'도다리'},
+      {name:'학꽁치 · 참치 · 단새우 · 관자 · 성게', main:'학꽁치'},
+      {name:'전갱이 · 참치 · 참돔 · 갑오징어 · 성게', main:'전갱이'}
+    ],
+
+    meal: [
+      {name:'도미 솥밥', main:'도미'},
+      {name:'죽순 솥밥', main:'죽순'},
+      {name:'전복 솥밥', main:'전복'},
+      {name:'완두 · 벚꽃새우 솥밥', main:'완두'},
+      {name:'바지락 솥밥', main:'바지락'}
+    ],
+
+    dessert: [
+      {name:'딸기 · 말차', main:'딸기'},
+      {name:'한라봉', main:'한라봉'},
+      {name:'쑥 아이스크림', main:'쑥'},
+      {name:'금귤 · 요거트', main:'금귤'},
+      {name:'벚꽃 젤리 · 팥', main:'벚꽃'}
+    ]
+  },
+
+
+  summer: {
+    arrival: [
+      '농어','전복','성게','갯장어',
+      '한치','참치','민어','아지',
+      '단새우','오이','옥수수','청매실'
+    ],
+
+    starter: [
+      {name:'전복 · 오이', main:'전복'},
+      {name:'성게 · 두부', main:'성게'},
+      {name:'한치 · 초생강', main:'한치'},
+      {name:'민어 · 매실', main:'민어'},
+      {name:'옥수수 · 다시', main:'옥수수'}
+    ],
+
+    soup: [
+      {name:'갯장어 · 매실', main:'갯장어'},
+      {name:'바지락 · 유자', main:'바지락'},
+      {name:'농어 · 맑은 육수', main:'농어'},
+      {name:'민어 · 무', main:'민어'},
+      {name:'전복 · 청귤', main:'전복'}
+    ],
+
+    sashimi: [
+      {name:'농어 · 시소', main:'농어'},
+      {name:'한치 · 소금', main:'한치'},
+      {name:'민어 · 다시마', main:'민어'},
+      {name:'참치 · 생와사비', main:'참치'},
+      {name:'아지 · 생강', main:'아지'}
+    ],
+
+    grilled: [
+      {name:'은대구 · 숯', main:'은대구'},
+      {name:'농어 · 소금', main:'농어'},
+      {name:'장어 · 간장', main:'장어'},
+      {name:'민어 · 숯', main:'민어'},
+      {name:'전복 · 버터간장', main:'전복'}
+    ],
+
+    sushi: [
+      {name:'참치 · 성게 · 한치 · 단새우 · 관자', main:'참치'},
+      {name:'농어 · 전갱이 · 참치 · 성게 · 새우', main:'농어'},
+      {name:'아지 · 참치 · 한치 · 관자 · 성게', main:'아지'},
+      {name:'민어 · 참치 · 단새우 · 전갱이 · 성게', main:'민어'}
+    ],
+
+    meal: [
+      {name:'장어 솥밥', main:'장어'},
+      {name:'전복 솥밥', main:'전복'},
+      {name:'옥수수 · 버터 솥밥', main:'옥수수'},
+      {name:'민어 솥밥', main:'민어'},
+      {name:'바지락 · 생강 솥밥', main:'바지락'}
+    ],
+
+    dessert: [
+      {name:'수박 · 소금', main:'수박'},
+      {name:'복숭아', main:'복숭아'},
+      {name:'말차 · 우유', main:'말차'},
+      {name:'청매실 셔벗', main:'청매실'},
+      {name:'참외 · 유자', main:'참외'}
+    ]
+  },
+
+
+  autumn: {
+    arrival: [
+      '전어','고등어','금태','송이버섯',
+      '참돔','단새우','가다랑어','전갱이',
+      '성게','표고','밤','무화과'
+    ],
+
+    starter: [
+      {name:'전어 · 식초', main:'전어'},
+      {name:'단새우 · 성게', main:'단새우'},
+      {name:'송이버섯 · 맑은 육수', main:'송이버섯'},
+      {name:'가다랑어 · 양파', main:'가다랑어'},
+      {name:'참돔 · 국화잎', main:'참돔'}
+    ],
+
+    soup: [
+      {name:'도미 · 유자', main:'도미'},
+      {name:'바지락 · 표고', main:'바지락'},
+      {name:'대합 · 미츠바', main:'대합'},
+      {name:'송이버섯 · 다시', main:'송이버섯'},
+      {name:'금태 · 무', main:'금태'}
+    ],
+
+    sashimi: [
+      {name:'참돔 · 다시마', main:'참돔'},
+      {name:'고등어 · 생강', main:'고등어'},
+      {name:'가다랑어 · 짚불', main:'가다랑어'},
+      {name:'참치 · 시소', main:'참치'},
+      {name:'전갱이 · 실파', main:'전갱이'}
+    ],
+
+    grilled: [
+      {name:'금태 · 숯', main:'금태'},
+      {name:'고등어 · 소금', main:'고등어'},
+      {name:'은대구 · 된장', main:'은대구'},
+      {name:'참돔 가마 · 숯', main:'참돔'},
+      {name:'송이버섯 · 숯', main:'송이버섯'}
+    ],
+
+    sushi: [
+      {name:'참치 · 전어 · 고등어 · 단새우 · 성게', main:'참치'},
+      {name:'참돔 · 참치 · 전갱이 · 관자 · 성게', main:'참돔'},
+      {name:'가다랑어 · 전갱이 · 참치 · 단새우 · 성게', main:'가다랑어'},
+      {name:'고등어 · 참치 · 관자 · 전어 · 단새우', main:'고등어'}
+    ],
+
+    meal: [
+      {name:'송이버섯 솥밥', main:'송이버섯'},
+      {name:'도미 솥밥', main:'도미'},
+      {name:'밤 · 표고 솥밥', main:'밤'},
+      {name:'전어 솥밥', main:'전어'},
+      {name:'금태 솥밥', main:'금태'}
+    ],
+
+    dessert: [
+      {name:'배 · 말차', main:'배'},
+      {name:'감 · 우유', main:'감'},
+      {name:'무화과', main:'무화과'},
+      {name:'밤 아이스크림', main:'밤'},
+      {name:'포도 · 시소', main:'포도'}
+    ]
+  },
+
+
+  winter: {
+    arrival: [
+      '방어','대구','굴','참치',
+      '금태','복어','전복','아귀',
+      '관자','대게','무','유자'
+    ],
+
+    starter: [
+      {name:'굴 · 무', main:'굴'},
+      {name:'방어 · 파', main:'방어'},
+      {name:'전복 · 게우', main:'전복'},
+      {name:'대게 · 유자', main:'대게'},
+      {name:'아귀간 · 폰즈', main:'아귀'}
+    ],
+
+    soup: [
+      {name:'대구 · 유자', main:'대구'},
+      {name:'복어 · 미나리', main:'복어'},
+      {name:'조개 · 무', main:'조개'},
+      {name:'대게 · 다시', main:'대게'},
+      {name:'굴 · 맑은 육수', main:'굴'}
+    ],
+
+    sashimi: [
+      {name:'방어 · 와사비', main:'방어'},
+      {name:'참치 · 다시마', main:'참치'},
+      {name:'광어 · 소금', main:'광어'},
+      {name:'복어 · 실파', main:'복어'},
+      {name:'관자 · 유자소금', main:'관자'}
+    ],
+
+    grilled: [
+      {name:'금태 · 숯', main:'금태'},
+      {name:'대구 · 된장', main:'대구'},
+      {name:'방어 · 간장', main:'방어'},
+      {name:'전복 · 버터간장', main:'전복'},
+      {name:'아귀 · 숯', main:'아귀'}
+    ],
+
+    sushi: [
+      {name:'방어 · 참치 · 광어 · 성게 · 관자', main:'방어'},
+      {name:'참치 · 방어 · 단새우 · 전갱이 · 성게', main:'참치'},
+      {name:'광어 · 참치 · 관자 · 단새우 · 성게', main:'광어'},
+      {name:'복어 · 참치 · 방어 · 관자 · 성게', main:'복어'}
+    ],
+
+    meal: [
+      {name:'굴 솥밥', main:'굴'},
+      {name:'대구 솥밥', main:'대구'},
+      {name:'전복 솥밥', main:'전복'},
+      {name:'대게 솥밥', main:'대게'},
+      {name:'방어 · 우엉 솥밥', main:'방어'}
+    ],
+
+    dessert: [
+      {name:'귤 · 말차', main:'귤'},
+      {name:'딸기', main:'딸기'},
+      {name:'배 · 생강', main:'배'},
+      {name:'유자 셔벗', main:'유자'},
+      {name:'금귤 · 꿀', main:'금귤'}
+    ]
+  }
+};
+
+
+const p = pools[season];
+
+
+/* =========================
+   오늘의 입고
+   하루 4종 / 중복 없이
+========================= */
+
+function pickUniqueStrings(arr, count, saltBase) {
+  const picked = [];
+  let attempt = 0;
+
+  while (
+    picked.length < Math.min(count, arr.length) &&
+    attempt < 100
+  ) {
+    const item =
+      arr[pickIndex(arr.length, saltBase + attempt * 17)];
+
+    if (!picked.includes(item)) {
+      picked.push(item);
+    }
+
+    attempt++;
+  }
+
+  return picked;
+}
+
+
+/* =========================
+   코스 선택
+
+   한 코스 안에서 대표 재료가
+   최대한 겹치지 않도록 선택
+========================= */
+
+const usedMain = new Set();
+
+function pickDish(arr, salt) {
+  const start = pickIndex(arr.length, salt);
+
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[(start + i) % arr.length];
+
+    if (!usedMain.has(item.main)) {
+      usedMain.add(item.main);
+      return item.name;
+    }
+  }
+
+  const fallback = arr[start];
+
+  usedMain.add(fallback.main);
+
+  return fallback.name;
+}
+
+
+/* =========================
+   오늘의 입고 출력
+========================= */
+
+const arrivals =
+  pickUniqueStrings(p.arrival, 4, 11);
+
+document.getElementById('arrival').innerHTML =
+  arrivals
+    .map(
+      item =>
+        `<span class="tag">오늘의 입고 · ${item}</span>`
+    )
+    .join('');
+
+
+/* =========================
+   오늘의 코스 출력
+========================= */
+
+const items = [
+  ['先付', pickDish(p.starter, 101)],
+  ['椀',   pickDish(p.soup, 202)],
+  ['造り', pickDish(p.sashimi, 303)],
+  ['焼物', pickDish(p.grilled, 404)],
+  ['鮨',   pickDish(p.sushi, 505)],
+  ['食事', pickDish(p.meal, 606)],
+  ['甘味', pickDish(p.dessert, 707)]
+];
+
+document.getElementById('courseList').innerHTML =
+  items
+    .map(
+      ([label, menu]) => `
+        <div class="row">
+          <div class="label">${label}</div>
+          <div class="menu">${menu}</div>
+        </div>
+      `
+    )
+    .join('');
+
 </script>
 </body></html>
