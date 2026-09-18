@@ -413,43 +413,80 @@ function pickDish(arr, salt) {
    오늘의 입고 출력
 ========================= */
 
-const arrivals =
-  pickUniqueStrings(p.arrival, 4, 11);
+const isMonday = now.getDay() === 1;
 
-document.getElementById('arrival').innerHTML =
-  arrivals
-    .map(
-      item =>
-        `<span class="tag">오늘의 입고 · ${item}</span>`
-    )
-    .join('');
+if (isMonday) {
 
+  document.getElementById('arrival').innerHTML = '';
 
-/* =========================
-   오늘의 코스 출력
-========================= */
+  const courseList = document.getElementById('courseList');
 
-const items = [
-  ['先付', pickDish(p.starter, 101)],
-  ['椀',   pickDish(p.soup, 202)],
-  ['造り', pickDish(p.sashimi, 303)],
-  ['焼物', pickDish(p.grilled, 404)],
-  ['鮨',   pickDish(p.sushi, 505)],
-  ['食事', pickDish(p.meal, 606)],
-  ['甘味', pickDish(p.dessert, 707)]
-];
+  courseList.style.display = 'block';
+  courseList.style.borderTop = '0';
 
-document.getElementById('courseList').innerHTML =
-  items
-    .map(
-      ([label, menu]) => `
-        <div class="row">
-          <div class="label">${label}</div>
-          <div class="menu">${menu}</div>
-        </div>
-      `
-    )
-    .join('');
+  courseList.innerHTML = `
+    <div style="
+      padding:55px 20px;
+      text-align:center;
+      border:1px solid var(--line);
+      background:var(--paper);
+    ">
+      <div style="
+        font-family:Georgia,serif;
+        font-size:24px;
+        margin-bottom:12px;
+      ">
+        CLOSED
+      </div>
 
+      <div style="font-size:15px;">
+        오늘은 정기휴무입니다.
+      </div>
+
+      <div style="
+        margin-top:8px;
+        font-size:12px;
+        color:var(--muted);
+      ">
+        매주 월요일 휴무
+      </div>
+    </div>
+  `;
+
+} else {
+
+  const arrivals =
+    pickUniqueStrings(p.arrival, 4, 11);
+
+  document.getElementById('arrival').innerHTML =
+    arrivals
+      .map(
+        item =>
+          `<span class="tag">오늘의 입고 · ${item}</span>`
+      )
+      .join('');
+
+  const items = [
+    ['전채', pickDish(p.starter, 101)],
+    ['맑은 국',   pickDish(p.soup, 202)],
+    ['사시미', pickDish(p.sashimi, 303)],
+    ['구이', pickDish(p.grilled, 404)],
+    ['스시',   pickDish(p.sushi, 505)],
+    ['식사', pickDish(p.meal, 606)],
+    ['디저트', pickDish(p.dessert, 707)]
+  ];
+
+  document.getElementById('courseList').innerHTML =
+    items
+      .map(
+        ([label, menu]) => `
+          <div class="row">
+            <div class="label">${label}</div>
+            <div class="menu">${menu}</div>
+          </div>
+        `
+      )
+      .join('');
+}
 </script>
 </body></html>
